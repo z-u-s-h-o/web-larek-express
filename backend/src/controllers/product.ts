@@ -33,32 +33,41 @@ export const createProduct = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    // cоздаём копию, чтобы не мутировать оригинал
-    const createData = { ...req.body };
+    const {
+      title, image, category, description, price,
+    } = req.body;
 
-    if (createData.image && createData.image.fileName) {
-      const tempPath = createData.image.fileName;
-      const finalPath = createData.image.originalName;
+    if (image && image.fileName) {
+      const tempPath = image.fileName;
+      const finalPath = image.originalName;
 
       try {
         // перемещаем загруженный во временную директорию файл в финальную
         await moveFileFromTemp(tempPath, finalPath);
-        createData.image.fileName = finalPath;
+        image.fileName = finalPath;
       } catch (error) {
         next(error);
         return;
       }
     }
 
-    const newProduct = await Product.create(createData);
+    const newProduct = await Product.create({
+      title,
+      image,
+      category,
+      description,
+      price,
+    });
 
     res.status(201).json(newProduct);
   } catch (error) {
+    const err = error as { code?: number};
+
     if (error instanceof mongoose.Error.ValidationError) {
-      const errors = Object.values(error.errors).map((err) => err.message);
+      const errors = Object.values(error.errors).map((e) => e.message);
       next(new BadRequestError(`Ошибка валидации: ${errors.join(', ')}`));
       return;
-    } if (error instanceof Error && error.message.includes('E11000')) {
+    } if (err.code === 11000) {
       next(new ConflictError('Товар с таким названием уже существует'));
       return;
     }
@@ -74,8 +83,9 @@ export const updateProduct = async (
 ): Promise<void> => {
   try {
     const { productId } = req.params;
-    // cоздаём копию, чтобы не мутировать оригинал
-    const updateData = { ...req.body };
+    const {
+      title, image, category, description, price,
+    } = req.body;
 
     const existingProduct = await Product.findById(productId);
     if (!existingProduct) {
@@ -83,13 +93,13 @@ export const updateProduct = async (
       return;
     }
 
-    if (updateData.image && updateData.image.fileName) {
-      const tempPath = updateData.image.fileName;
-      const finalPath = updateData.image.originalName;
+    if (image && image.fileName) {
+      const tempPath = image.fileName;
+      const finalPath = image.originalName;
 
       try {
         await moveFileFromTemp(tempPath, finalPath);
-        updateData.image.fileName = finalPath;
+        image.fileName = finalPath;
       } catch (error) {
         next(error);
         return;
@@ -98,7 +108,13 @@ export const updateProduct = async (
 
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
-      updateData,
+      {
+        title,
+        image,
+        category,
+        description,
+        price,
+      },
       { new: true, runValidators: true },
     );
 
@@ -109,12 +125,18 @@ export const updateProduct = async (
 
     res.status(200).json(updatedProduct);
   } catch (error) {
+    const err = error as { code?: number; name?: string };
     if (error instanceof mongoose.Error.ValidationError) {
-      const errors = Object.values(error.errors).map((err) => err.message);
+      const errors = Object.values(error.errors).map((e) => e.message);
       next(new BadRequestError(`Ошибка валидации: ${errors.join(', ')}`));
-    } else {
-      next(error);
+    } if (err.code === 11000) {
+      next(new ConflictError('Товар с таким названием уже существует'));
+      return;
+    } if (err.name === 'CastError') {
+      next(new BadRequestError('Некорректный ID товара'));
+      return;
     }
+    next(error);
   }
 };
 
@@ -136,6 +158,11 @@ export const deleteProduct = async (
 
     res.status(200).json(deletedProduct);
   } catch (error) {
+    const err = error as {name?: string };
+    if (err.name === 'CastError') {
+      next(new BadRequestError('Некорректный ID товара'));
+      return;
+    }
     next(error);
   }
 };

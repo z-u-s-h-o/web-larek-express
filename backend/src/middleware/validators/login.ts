@@ -10,10 +10,8 @@ export const validateLogin = celebrate({
         'any.required': 'Email обязателен'
       }),
     password: Joi.string()
-      .min(6)
       .required()
       .messages({
-        'string.min': 'Пароль должен содержать минимум 6 символов',
         'any.required': 'Пароль обязателен'
       })
   })

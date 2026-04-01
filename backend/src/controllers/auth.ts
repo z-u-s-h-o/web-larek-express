@@ -4,12 +4,13 @@ import {
   CookieOptions, NextFunction, Request, Response,
 } from 'express';
 
+import mongoose from 'mongoose';
+import ConflictError from '../errors/conflict-error';
 import User from '../models/user';
 
 import NotFoundError from '../errors/not-found-error';
 import UnauthorizedError from '../errors/unauthorized-error';
 import BadRequestError from '../errors/bad-request-error';
-import ConflictError from '../errors/conflict-error';
 import generateTokens from '../utils/generateTokens';
 
 const {
@@ -46,6 +47,12 @@ export const getCurrentUser = async (
       success: true,
     });
   } catch (error) {
+    const err = error as { name?: string };
+
+    if (err.name === 'CastError') {
+      next(new BadRequestError('Некорректный формат ID пользователя'));
+      return;
+    }
     next(error);
   }
 };
@@ -101,12 +108,6 @@ export const register = async (
   try {
     const { email, password, name } = req.body;
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      next(new ConflictError('Пользователь с такой почтой уже существует'));
-      return;
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
@@ -137,6 +138,16 @@ export const register = async (
       accessToken,
     });
   } catch (error) {
+    const err = error as { code?: number; name?: string };
+
+    if (error instanceof mongoose.Error.ValidationError) {
+      const errors = Object.values(error.errors).map((e) => e.message);
+      next(new BadRequestError(`Ошибка валидации: ${errors.join(', ')}`));
+      return;
+    } if (err.code === 11000) {
+      next(new ConflictError('Пользователь с таким email уже существует'));
+      return;
+    }
     next(error);
   }
 };
@@ -197,6 +208,12 @@ export const logout = async (
       success: true,
     });
   } catch (error) {
+    const err = error as { name?: string };
+
+    if (err.name === 'CastError') {
+      next(new BadRequestError('Некорректный формат ID пользователя'));
+      return;
+    }
     next(error);
   }
 };
