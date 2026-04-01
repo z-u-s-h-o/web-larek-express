@@ -18,3 +18,7 @@ node_modules
 dist
 temp
 .env
+
+# log winston
+request.log
+error.log

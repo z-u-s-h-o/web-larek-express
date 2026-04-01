@@ -10,7 +10,6 @@ export const enum RequestStatus {
 	Failed = 'failed',
 }
 
-
 export type ApiListResponse<Type> = {
 	total: number;
 	items: Type[];
