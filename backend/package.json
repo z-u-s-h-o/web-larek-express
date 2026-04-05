@@ -10,24 +10,41 @@
     "start": "ts-node src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "< Укажите здесь автора работы >",
+  "author": "Швецова Екатерина",
   "license": "ISC",
   "devDependencies": {
-    "@types/express": "^4.17.21",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/cron": "^2.0.1",
+    "@types/express": "^4.17.25",
+    "@types/express-winston": "^3.0.4",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.1.0",
     "@types/node": "^20.12.7",
-    "@types/validator": "^13.11.9",
+    "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^7.7.1",
     "@typescript-eslint/parser": "^7.7.1",
     "eslint": "^8.56.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.29.1",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.4.0",
+    "@types/mongoose": "^5.11.96",
+    "bcryptjs": "^3.0.3",
+    "celebrate": "^15.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "cron": "^4.4.0",
+    "dotenv": "^17.3.1",
     "express": "^4.19.2",
+    "express-winston": "^4.2.0",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.3.2",
-    "validator": "^13.11.0"
+    "multer": "^2.1.1",
+    "winston": "^3.19.0"
   }
 }
